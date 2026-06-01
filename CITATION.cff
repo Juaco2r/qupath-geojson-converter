@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+title: "QuPath GeoJSON Converter"
+version: 1.0.0
+license: "MIT"
+type: software
+abstract: "A lightweight Python GUI application for converting GeoJSON annotation files into QuPath-compatible annotation and detection formats."
+message: "If you use this software, please cite it using the metadata below."
+authors:
+  - given-names: Jose
+    family-names: Rodriguez-Rojas
+    affiliation: "Universitat de Barcelona"
+    orcid: "https://orcid.org/0000-0003-4373-5480"
+keywords:
+  - QuPath
+  - GeoJSON
+  - digital pathology
+  - computational pathology
+  - whole-slide imaging
+  - image annotation

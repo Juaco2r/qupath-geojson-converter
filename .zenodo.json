@@ -1,0 +1,27 @@
+{
+    "title": "QuPath GeoJSON Converter",
+    "upload_type": "software",
+    "description": "A lightweight Python GUI application for converting GeoJSON annotation files into QuPath-compatible annotation and detection formats.",
+    "creators": [
+      {
+        "name": "Rodriguez-Rojas, Jose",
+        "affiliation": "Universitat de Barcelona",
+        "orcid": "0000-0003-4373-5480"
+      }
+    ],
+    "access_right": "open",
+    "license": "mit",
+    "version": "1.0.0",
+    "language": "eng",
+    "keywords": [
+      "QuPath",
+      "GeoJSON",
+      "digital pathology",
+      "computational pathology",
+      "whole-slide imaging",
+      "image annotation",
+      "annotation converter",
+      "Python",
+      "Tkinter"
+    ]
+  }
