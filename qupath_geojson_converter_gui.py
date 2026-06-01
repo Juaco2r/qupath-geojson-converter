@@ -58,6 +58,14 @@ DEFAULT_COLOR = [255, 0, 0]
 PROGRESS_UPDATE_EVERY_N_FEATURES = 250
 COMPACT_JSON_OUTPUT = True
 
+APP_VERSION = "1.0.0"
+ZENODO_DOI = "10.5281/zenodo.20496387"
+ZENODO_URL = "https://doi.org/10.5281/zenodo.20496387"
+GITHUB_URL = "https://github.com/Juaco2r/qupath-geojson-converter"
+AUTHOR_NAME = "Jose Rodriguez"
+AUTHOR_ORCID = "0000-0003-4373-5480"
+APP_ICON_FILENAME = "assets/icon/qupath_geojson_converter.ico"
+
 MODE_MERGE = "merge"
 MODE_STANDARD = "standard"
 MODE_OBJECTS = "objects"
@@ -764,6 +772,36 @@ def collect_geojson_files_from_folder(folder: Path, include_subfolders: bool) ->
     return sorted(files, key=lambda p: str(p).lower())
 
 
+
+def resource_path(relative_path: str) -> Path:
+    """
+    Return the correct resource path when running from source or from a
+    PyInstaller one-file/one-folder executable.
+    """
+    try:
+        base_path = Path(sys._MEIPASS)  # type: ignore[attr-defined]
+    except Exception:
+        base_path = Path(__file__).resolve().parent
+    return base_path / relative_path
+
+
+def set_tk_window_icon(root: tk.Tk) -> None:
+    """
+    Set the application window icon.
+
+    On Windows, iconbitmap works well with .ico files and also controls the
+    taskbar/window icon when the app is packaged. Other platforms may ignore
+    .ico files depending on the Tk build, so failures are safely ignored.
+    """
+    icon_file = resource_path(APP_ICON_FILENAME)
+    if not icon_file.exists():
+        return
+
+    try:
+        root.iconbitmap(default=str(icon_file))
+    except Exception:
+        pass
+
 # -----------------------------------------------------------------------------
 # GUI
 # -----------------------------------------------------------------------------
@@ -773,6 +811,7 @@ class QuPathGeoJSONConverterApp:
     def __init__(self, root: tk.Tk) -> None:
         self.root = root
         self.root.title("QuPath GeoJSON Converter")
+        set_tk_window_icon(self.root)
         self.root.geometry("980x820")
         self.root.minsize(880, 690)
 
@@ -814,8 +853,14 @@ class QuPathGeoJSONConverterApp:
         )
         subtitle.grid(row=1, column=0, sticky="w", pady=(4, 0))
 
-        self.help_button = ttk.Button(header, text="Help", command=self.show_help)
-        self.help_button.grid(row=0, column=1, rowspan=2, sticky="e", padx=(12, 0))
+        header_buttons = ttk.Frame(header)
+        header_buttons.grid(row=0, column=1, rowspan=2, sticky="e", padx=(12, 0))
+
+        self.about_button = ttk.Button(header_buttons, text="About", command=self.show_about)
+        self.about_button.grid(row=0, column=0, sticky="e", padx=(0, 6))
+
+        self.help_button = ttk.Button(header_buttons, text="Help", command=self.show_help)
+        self.help_button.grid(row=0, column=1, sticky="e")
 
         controls = ttk.Frame(self.root, padding=(12, 4, 12, 4))
         controls.grid(row=1, column=0, sticky="ew")
@@ -995,9 +1040,28 @@ class QuPathGeoJSONConverterApp:
         for check in self._mode_checks():
             check.configure(state=state)
 
+    def show_about(self) -> None:
+        about_text = (
+            f"QuPath GeoJSON Converter v{APP_VERSION}\n\n"
+            "A lightweight graphical tool for converting GeoJSON annotation files "
+            "into QuPath-compatible annotation and detection formats.\n\n"
+            f"Author: {AUTHOR_NAME}\n"
+            f"ORCID: {AUTHOR_ORCID}\n"
+            "License: MIT\n\n"
+            f"GitHub: {GITHUB_URL}\n"
+            f"Zenodo DOI: {ZENODO_DOI}\n"
+            f"DOI URL: {ZENODO_URL}\n\n"
+            "Suggested citation:\n"
+            f"{AUTHOR_NAME}. QuPath GeoJSON Converter. Version {APP_VERSION}. "
+            f"Zenodo. https://doi.org/{ZENODO_DOI}\n\n"
+            "This is an independent utility and is not affiliated with or endorsed by the QuPath project."
+        )
+        messagebox.showinfo("About", about_text)
+
     def show_help(self) -> None:
         help_text = (
-            "QuPath GeoJSON Converter\n\n"
+            "QuPath GeoJSON Converter\n"
+            f"Version {APP_VERSION} | DOI: {ZENODO_DOI}\n\n"
             "Input and output\n"
             "• Add one or more GeoJSON/JSON files, or add a full folder.\n"
             "• By default, converted files are saved next to each input file with the '_qupath' suffix.\n"

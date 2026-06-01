@@ -1,6 +1,23 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs, collect_submodules
+import sys
+from pathlib import Path
+
+from PyInstaller.utils.hooks import (
+    collect_data_files,
+    collect_dynamic_libs,
+    collect_submodules,
+)
+
+APP_NAME = "QuPathGeoJSONConverter"
+SCRIPT = "qupath_geojson_converter_gui.py"
+
+ICON_ICO = "assets/icon/qupath_geojson_converter.ico"
+ICON_ICNS = "assets/icon/qupath_geojson_converter.icns"
+
+# Windows uses .ico. macOS uses .icns. Linux generally ignores the executable icon,
+# but keeping the .ico here is harmless.
+ICON = ICON_ICNS if sys.platform == "darwin" and Path(ICON_ICNS).exists() else ICON_ICO
 
 block_cipher = None
 
@@ -10,12 +27,17 @@ shapely_datas = collect_data_files("shapely")
 shapely_binaries = collect_dynamic_libs("shapely")
 shapely_hiddenimports = collect_submodules("shapely")
 
+icon_datas = []
+if Path(ICON_ICO).exists():
+    icon_datas.append((ICON_ICO, "assets/icon"))
+if Path(ICON_ICNS).exists():
+    icon_datas.append((ICON_ICNS, "assets/icon"))
 
 a = Analysis(
-    ["qupath_geojson_converter_gui.py"],
+    [SCRIPT],
     pathex=[],
     binaries=shapely_binaries,
-    datas=shapely_datas,
+    datas=shapely_datas + icon_datas,
     hiddenimports=shapely_hiddenimports,
     hookspath=[],
     hooksconfig={},
@@ -36,7 +58,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name="QuPathGeoJSONConverter",
+    name=APP_NAME,
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -49,4 +71,19 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=ICON,
 )
+
+if sys.platform == "darwin":
+    app = BUNDLE(
+        exe,
+        name=f"{APP_NAME}.app",
+        icon=ICON_ICNS,
+        bundle_identifier="org.juaco2r.qupathgeojsonconverter",
+        info_plist={
+            "CFBundleName": "QuPath GeoJSON Converter",
+            "CFBundleDisplayName": "QuPath GeoJSON Converter",
+            "CFBundleShortVersionString": "1.0.0",
+            "CFBundleVersion": "1.0.0",
+        },
+    )

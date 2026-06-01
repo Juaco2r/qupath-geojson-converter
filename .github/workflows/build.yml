@@ -38,7 +38,37 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pyinstaller
+          pip install pyinstaller pillow
+
+      - name: Generate macOS ICNS icon if missing
+        if: matrix.os == 'macos-latest'
+        shell: bash
+        run: |
+          if [ ! -f "assets/icon/qupath_geojson_converter.icns" ]; then
+            python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+
+          ico_path = Path("assets/icon/qupath_geojson_converter.ico")
+          icns_path = Path("assets/icon/qupath_geojson_converter.icns")
+
+          if not ico_path.exists():
+              raise FileNotFoundError(f"Missing icon: {ico_path}")
+
+          img = Image.open(ico_path)
+          frames = []
+          for i in range(getattr(img, "n_frames", 1)):
+              img.seek(i)
+              frames.append(img.copy().convert("RGBA"))
+
+          base = max(frames, key=lambda im: im.width * im.height)
+          sizes = [16, 32, 64, 128, 256, 512, 1024]
+          resized = [base.resize((s, s), Image.Resampling.LANCZOS) for s in sizes]
+
+          resized[0].save(icns_path, format="ICNS", append_images=resized[1:])
+          print(f"Created {icns_path}")
+          PY
+          fi
 
       - name: Build application
         run: pyinstaller --clean --noconfirm qupath_geojson_converter_gui.spec
